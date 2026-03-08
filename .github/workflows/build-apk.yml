@@ -17,6 +17,15 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
+      - name: Build dist folder
+        run: |
+          mkdir -p dist
+          cp index.html manifest.json sw.js dist/
+          cp -r css dist/css
+          cp -r js dist/js
+          cp -r icons dist/icons
+          cp -r lib dist/lib
+
       - name: Sync Capacitor
         run: npx cap sync android
 
