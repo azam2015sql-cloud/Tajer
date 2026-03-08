@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="description" content="تطبيق تاجر لإدارة المبيعات والعملاء والموردين">
+    <title>تاجر - إدارة المبيعات</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <!-- Auth Overlay -->
+    <div id="authOverlay" class="auth-overlay"></div>
+    <!-- Install Prompt Banner -->
+    <div id="installBanner" class="install-banner hidden">
+        <div class="install-banner-content">
+            <span>📲 ثبّت تطبيق تاجر على جهازك</span>
+            <button id="installBtn" class="btn btn-sm btn-primary">تثبيت</button>
+            <button id="dismissInstall" class="btn btn-sm btn-ghost">لاحقاً</button>
+        </div>
+    </div>
+
+    <!-- App Shell -->
+    <div class="app-container">
+        <div id="app" class="app">
+            <!-- Header -->
+            <header class="app-header">
+                <div class="header-content">
+                    <button id="backBtn" class="btn-icon hidden" onclick="goBack()">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M9 18l6-6-6-6" />
+                        </svg>
+                    </button>
+                    <h1 id="pageTitle" class="header-title">تاجر</h1>
+                    <div class="header-actions">
+                        <button id="searchToggle" class="btn-icon" onclick="toggleSearch()">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <circle cx="11" cy="11" r="8" />
+                                <path d="m21 21-4.35-4.35" />
+                            </svg>
+                        </button>
+                        <button class="btn-icon" onclick="navigateTo('Settings')">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <circle cx="12" cy="12" r="3" />
+                                <path
+                                    d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div id="searchBar" class="search-bar hidden">
+                    <input type="text" id="searchInput" class="search-input" placeholder="بحث..."
+                        oninput="handleSearch(this.value)">
+                </div>
+            </header>
+
+            <!-- Main Content -->
+            <main id="mainContent" class="main-content">
+                <!-- Dashboard Page -->
+                <section id="pageDashboard" class="page active">
+                    <div class="dashboard-grid" id="dashboardGrid">
+                        <!-- Filled by JS -->
+                    </div>
+                    <div class="dashboard-section">
+                        <h3 class="section-title">الأقساط المستحقة هذا الشهر</h3>
+                        <div id="dueInstallments" class="cards-list">
+                            <p class="empty-state">لا توجد أقساط مستحقة</p>
+                        </div>
+                    </div>
+                    <div class="dashboard-section">
+                        <h3 class="section-title">العملاء المدينون</h3>
+                        <div id="debtorsList" class="cards-list">
+                            <p class="empty-state">لا يوجد عملاء مدينون</p>
+                        </div>
+                    </div>
+                    <div class="dashboard-section">
+                        <h3 class="section-title">تنبيهات المخزون</h3>
+                        <div id="lowStockList" class="cards-list">
+                            <p class="empty-state">المخزون جيد</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Products Page -->
+                <section id="pageProducts" class="page">
+                    <div id="categoriesTabs" class="categories-tabs">
+                        <button class="category-tab active" data-cat="all"
+                            onclick="filterByCategory('all')">الكل</button>
+                    </div>
+                    <div id="productsList" class="cards-list">
+                        <p class="empty-state">لا توجد أصناف. أضف صنفاً جديداً</p>
+                    </div>
+                </section>
+
+                <!-- Customers Page -->
+                <section id="pageCustomers" class="page">
+                    <div style="display:flex;align-items:center;gap:8px;padding:0 0 10px 0">
+                        <button class="btn btn-sm btn-outline" onclick="navigateTo('OrdersHistory')"
+                            style="flex-shrink:0;display:flex;align-items:center;gap:4px;font-size:0.78rem">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M12 8v4l3 3" />
+                                <circle cx="12" cy="12" r="9" />
+                            </svg>
+                            سجل الطلبات
+                        </button>
+                    </div>
+                    <div id="customersList" class="cards-list">
+                        <p class="empty-state">لا يوجد عملاء. أضف عميلاً جديداً</p>
+                    </div>
+                </section>
+
+                <!-- Customer Detail Page -->
+                <section id="pageCustomerDetail" class="page">
+                    <div id="customerInfo" class="detail-header"></div>
+                    <div class="tabs-bar">
+                        <button class="tab active" data-tab="orders"
+                            onclick="switchCustomerTab('orders')">الطلبات</button>
+                        <button class="tab" data-tab="installments"
+                            onclick="switchCustomerTab('installments')">الأقساط</button>
+                        <button class="tab" data-tab="payments" onclick="switchCustomerTab('payments')">الدفعات</button>
+                    </div>
+                    <div id="customerTabContent" class="tab-content"></div>
+                </section>
+
+                <!-- Suppliers Page -->
+                <section id="pageSuppliers" class="page">
+                    <div id="suppliersList" class="cards-list">
+                        <p class="empty-state">لا يوجد موردين. أضف مورداً جديداً</p>
+                    </div>
+                </section>
+
+                <!-- Supplier Detail Page -->
+                <section id="pageSupplierDetail" class="page">
+                    <div id="supplierInfo" class="detail-header"></div>
+                    <div class="tabs-bar">
+                        <button class="tab active" data-tab="items"
+                            onclick="switchSupplierTab('items')">الأصناف</button>
+                        <button class="tab" data-tab="payments" onclick="switchSupplierTab('payments')">الدفعات</button>
+                    </div>
+                    <div id="supplierTabContent" class="tab-content"></div>
+                </section>
+
+                <!-- Orders History Page -->
+                <section id="pageOrdersHistory" class="page">
+                    <div id="ordersHistoryList" class="cards-list"></div>
+                </section>
+
+                <!-- Messages Page -->
+                <section id="pageMessages" class="page">
+                    <div id="messagesContent"></div>
+                </section>
+
+                <!-- Reports Page -->
+                <section id="pageReports" class="page">
+                    <div id="aiBannerContainer"></div>
+                    <div class="report-filters">
+                        <select id="reportPeriod" class="input-field" onchange="loadReports()">
+                            <option value="today">اليوم</option>
+                            <option value="week">هذا الأسبوع</option>
+                            <option value="month" selected>هذا الشهر</option>
+                            <option value="quarter">آخر 3 أشهر</option>
+                            <option value="year">هذا السنة</option>
+                            <option value="all">الكل</option>
+                        </select>
+                    </div>
+                    <div id="reportsContent" class="reports-grid"></div>
+                </section>
+
+                <!-- Settings Page -->
+                <section id="pageSettings" class="page">
+                    <div class="settings-list">
+                        <div class="setting-item">
+                            <label>اسم المتجر</label>
+                            <input type="text" id="settingStoreName" class="input-field" placeholder="متجري"
+                                onchange="saveSetting('storeName', this.value)">
+                        </div>
+                        <div class="setting-item">
+                            <label>العملة</label>
+                            <input type="text" id="settingCurrency" class="input-field" placeholder="ر.س"
+                                onchange="saveSetting('currency', this.value)">
+                        </div>
+                        <div class="setting-item">
+                            <label>الوحدة الافتراضية</label>
+                            <input type="text" id="settingUnit" class="input-field" placeholder="قطعة"
+                                onchange="saveSetting('defaultUnit', this.value)">
+                        </div>
+                        <div class="setting-item">
+                            <label>الوضع المظلم</label>
+                            <label class="switch">
+                                <input type="checkbox" id="settingDarkMode" checked
+                                    onchange="toggleDarkMode(this.checked)">
+                                <span class="switch-slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <label>📞 رقم هاتف المتجر</label>
+                            <input type="tel" id="settingStorePhone" class="input-field" placeholder="0912345678"
+                                style="direction:ltr" onchange="saveSetting('storePhone', this.value)">
+                        </div>
+                        <div class="setting-item">
+                            <label>🏦 الحسابات البنكية</label>
+                            <textarea id="settingBankAccounts" class="input-field" rows="3"
+                                placeholder="بنك الخرطوم: 123456&#10;بنك فيصل: 789012"
+                                onchange="saveSetting('bankAccounts', this.value)"
+                                style="resize:vertical;font-size:0.78rem"></textarea>
+                        </div>
+                        <div class="setting-divider"></div>
+                        <div class="setting-item">
+                            <label>تصدير البيانات</label>
+                            <div style="display:flex;gap:6px">
+                                <button class="btn btn-outline" onclick="exportData()">📥 JSON</button>
+                                <button class="btn btn-outline" onclick="exportExcel()">📊 Excel</button>
+                            </div>
+                        </div>
+                        <div class="setting-item">
+                            <label>استيراد البيانات</label>
+                            <div style="display:flex;gap:6px">
+                                <input type="file" id="importFile" accept=".json" class="hidden"
+                                    onchange="importData(this.files[0])">
+                                <button class="btn btn-outline btn-sm"
+                                    onclick="document.getElementById('importFile').click()">📤 JSON</button>
+                                <input type="file" id="importExcelFile" accept=".xlsx,.xls" class="hidden"
+                                    onchange="importExcel(this.files[0])">
+                                <button class="btn btn-outline btn-sm"
+                                    onclick="document.getElementById('importExcelFile').click()">📊 Excel</button>
+                            </div>
+                        </div>
+                        <div class="setting-divider"></div>
+                        <div class="setting-item" id="keyManagementSection">
+                            <label>إدارة مفاتيح التفعيل</label>
+                            <button class="btn btn-outline" onclick="showKeyManagement()">🔑 المفاتيح</button>
+                        </div>
+                        <div class="setting-item" id="goldKeySection" style="display:none">
+                            <label>👑 مفاتيح Premium Gold</label>
+                            <button class="btn" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:white"
+                                onclick="showGoldKeyManagement()">👑 إدارة Gold</button>
+                        </div>
+                        <div class="setting-item" id="gsheetSection" style="display:none">
+                            <label>☁️ مزامنة Google Sheets</label>
+                            <button class="btn btn-outline" onclick="showGSheetSetupModal()">☁️ إعداد المزامنة</button>
+                        </div>
+                        <div class="setting-divider"></div>
+                        <div class="setting-item">
+                            <label>تغيير كلمة المرور</label>
+                            <button class="btn btn-outline" onclick="showChangePasswordModal()">🔐 تغيير</button>
+                        </div>
+                        <div class="setting-divider"></div>
+                        <div class="setting-item">
+                            <label>🤖 تحليل الذكاء الاصطناعي</label>
+                            <button class="btn" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white"
+                                onclick="showPremiumModal()">🎯 Premium</button>
+                        </div>
+                        <div class="setting-divider"></div>
+                        <div class="setting-item">
+                            <label>كتيب الاستخدام</label>
+                            <button class="btn btn-outline" onclick="showUserManual()">📖 دليل المستخدم</button>
+                        </div>
+                        <div class="setting-divider"></div>
+                        <p class="setting-note">تطبيق تاجر v2.0 - إدارة المبيعات</p>
+                        <p class="setting-note" style="margin-top:4px">تطوير: عزام سليمان | 0917454900</p>
+                        <p class="setting-note" style="font-size:0.7rem">© 2026 جميع الحقوق محفوظة</p>
+                    </div>
+                </section>
+            </main>
+
+            <!-- Floating Action Button -->
+            <button id="fab" class="fab" onclick="handleFabClick()">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M12 5v14M5 12h14" />
+                </svg>
+            </button>
+
+            <!-- Bottom Navigation -->
+            <nav class="bottom-nav">
+                <button class="nav-item active" data-page="Dashboard" onclick="navigateTo('Dashboard')">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                        <polyline points="9,22 9,12 15,12 15,22" />
+                    </svg>
+                    <span>الرئيسية</span>
+                </button>
+                <button class="nav-item" data-page="Products" onclick="navigateTo('Products')">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="m7.5 4.27 9 5.15" />
+                        <path
+                            d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
+                        <path d="m3.3 7 8.7 5 8.7-5" />
+                        <path d="M12 22V12" />
+                    </svg>
+                    <span>الأصناف</span>
+                </button>
+                <button class="nav-item" data-page="Customers" onclick="navigateTo('Customers')">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                        <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                    </svg>
+                    <span>العملاء</span>
+                </button>
+                <button class="nav-item" data-page="Messages" onclick="navigateTo('Messages')">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                    </svg>
+                    <span>الرسائل</span>
+                </button>
+                <button class="nav-item" data-page="Suppliers" onclick="navigateTo('Suppliers')">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M1 3h15v13H1z" />
+                        <path d="M16 8h4l3 3v5h-7V8z" />
+                        <circle cx="5.5" cy="18.5" r="2.5" />
+                        <circle cx="18.5" cy="18.5" r="2.5" />
+                    </svg>
+                    <span>الموردين</span>
+                </button>
+                <button class="nav-item" data-page="Reports" onclick="navigateTo('Reports')">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 3v18h18" />
+                        <path d="m19 9-5 5-4-4-3 3" />
+                    </svg>
+                    <span>تقارير</span>
+                </button>
+            </nav>
+        </div>
+
+    </div> <!-- end app-container -->
+
+    <!-- Modal Overlay -->
+    <div id="modalOverlay" class="modal-overlay hidden" onclick="closeModal()"></div>
+    <div id="modal" class="modal hidden">
+        <div class="modal-header">
+            <h2 id="modalTitle" class="modal-title"></h2>
+            <button class="btn-icon" onclick="closeModal()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 6 6 18" />
+                    <path d="m6 6 12 12" />
+                </svg>
+            </button>
+        </div>
+        <div id="modalBody" class="modal-body"></div>
+        <div id="modalFooter" class="modal-footer"></div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast hidden"></div>
+
+    <!-- Confirm Dialog -->
+    <div id="confirmDialog" class="confirm-dialog hidden">
+        <div class="confirm-content">
+            <p id="confirmMessage"></p>
+            <div class="confirm-actions">
+                <button class="btn btn-ghost" onclick="closeConfirm(false)">إلغاء</button>
+                <button class="btn btn-danger" onclick="closeConfirm(true)">تأكيد</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" async></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js" async></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="lib/dexie.min.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/db.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/products.js"></script>
+    <script src="js/customers.js"></script>
+    <script src="js/customer-detail.js"></script>
+    <script src="js/suppliers.js"></script>
+    <script src="js/supplier-detail.js"></script>
+    <script src="js/reports.js"></script>
+    <script src="js/orders-history.js"></script>
+    <script src="js/ai-analysis.js"></script>
+    <script src="js/google-sync.js"></script>
+    <script src="js/calculator.js"></script>
+    <script src="js/whatsapp.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>
