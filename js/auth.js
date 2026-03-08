@@ -158,6 +158,9 @@ function showActivationScreen() {
 // Handle Google Sign-In flow
 async function handleGoogleSignIn() {
     try {
+        // Ensure Firebase is initialized
+        try { initFirebase(); } catch (e) { console.error('Firebase init in Google sign-in:', e); }
+
         const btn = event.currentTarget;
         const originalText = btn.innerHTML;
         btn.innerHTML = '⏳ جاري الاتصال بحساب Google...';
@@ -422,6 +425,9 @@ function verifyOwnerEmail() {
 // User Activation (Firebase)
 // ==========================================
 async function verifyActivationKey(expectedType) {
+    // Ensure Firebase is initialized before validation
+    try { initFirebase(); } catch (e) { console.error('Firebase init in activation:', e); }
+
     const key = document.getElementById('activationKey').value.trim().toUpperCase();
     const errEl = document.getElementById('keyError');
     const btn = document.getElementById('activateBtn');
@@ -889,6 +895,30 @@ async function checkAuth() {
         initFirebase();
     } catch (err) {
         console.error('Firebase init error:', err);
+    }
+
+    // Check for Google Sign-In redirect result (Capacitor flow)
+    try {
+        if (typeof isCapacitorNative === 'function' && isCapacitorNative()) {
+            const redirectResult = await firebase.auth().getRedirectResult();
+            if (redirectResult && redirectResult.user) {
+                // User just completed Google sign-in via redirect
+                const user = redirectResult.user;
+                const deviceId = getDeviceId();
+                await fbSet(`users/${deviceId}`, {
+                    email: user.email,
+                    displayName: user.displayName,
+                    photoURL: user.photoURL || '',
+                    lastLogin: new Date().toISOString(),
+                    provider: 'google'
+                });
+                // Show country setup for new registration
+                showCountrySetup(user.email, user.displayName);
+                return;
+            }
+        }
+    } catch (redirectErr) {
+        console.log('No pending redirect:', redirectErr.message);
     }
 
     const auth = getAuthData();

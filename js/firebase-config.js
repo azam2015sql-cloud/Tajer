@@ -12,6 +12,13 @@ const FIREBASE_CONFIG = {
     appId: "1:755410000112:web:99309141bd43eab769ca35"
 };
 
+// Capacitor native detection
+function isCapacitorNative() {
+    return typeof window !== 'undefined' && window.Capacitor &&
+        typeof window.Capacitor.isNativePlatform === 'function' &&
+        window.Capacitor.isNativePlatform();
+}
+
 // Initialize Firebase
 let _firebaseApp = null;
 let _firebaseDB = null;
@@ -36,8 +43,21 @@ async function signInWithGoogle() {
         initFirebase();
         const provider = new firebase.auth.GoogleAuthProvider();
         provider.setCustomParameters({ prompt: 'select_account' });
-        const result = await _firebaseAuth.signInWithPopup(provider);
-        const user = result.user;
+
+        let user;
+        if (isCapacitorNative()) {
+            // In Capacitor WebView, popup is not supported — use redirect
+            await _firebaseAuth.signInWithRedirect(provider);
+            const result = await _firebaseAuth.getRedirectResult();
+            if (!result || !result.user) {
+                return { success: false, error: 'لم يتم تسجيل الدخول. حاول مرة أخرى.' };
+            }
+            user = result.user;
+        } else {
+            // In regular browser, use popup
+            const result = await _firebaseAuth.signInWithPopup(provider);
+            user = result.user;
+        }
 
         // Save user profile to Firebase
         const deviceId = getDeviceId();
@@ -59,7 +79,7 @@ async function signInWithGoogle() {
         if (err.code === 'auth/popup-blocked') {
             return { success: false, error: 'المتصفح منع النافذة المنبثقة. يرجى السماح بها.' };
         }
-        if (err.code === 'auth/popup-closed-by-user') {
+        if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/redirect-cancelled-by-user') {
             return { success: false, error: 'تم إلغاء تسجيل الدخول' };
         }
         return { success: false, error: err.message };

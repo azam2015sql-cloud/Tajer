@@ -35,11 +35,11 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
-      - name: Build APK (Assemble Debug/Release)
+      - name: Build APK (Debug with fixed keystore)
         run: |
           cd android
           chmod +x ./gradlew
-          ./gradlew assembleDebug
+          ./gradlew assembleDebug -Pandroid.injected.signing.store.file=${{ github.workspace }}/android/app/debug.keystore -Pandroid.injected.signing.store.password=android -Pandroid.injected.signing.key.alias=androiddebugkey -Pandroid.injected.signing.key.password=android
 
       - name: Upload APK
         uses: actions/upload-artifact@v4

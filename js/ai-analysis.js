@@ -396,6 +396,9 @@ async function callAIAnalysis(prompt) {
 
     if (!response.ok) {
         const err = await response.json().catch(() => ({}));
+        if (response.status === 401) {
+            throw new Error('Invalid API Key');
+        }
         throw new Error(err.error?.message || `API Error: ${response.status}`);
     }
 
